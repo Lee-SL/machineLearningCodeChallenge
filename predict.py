@@ -39,10 +39,6 @@ for the cats csv file for example: ./input/cats_pred.csv
     print("Replacing all NaN values with median")
     cats = pre_process.replace_nan(cats)
 
-    # Replace Outliers
-    print("Replacing outliers")
-    pre_process.replace_outliers(cats)
-
     # Normalise dataset
     print("Normalising dataset")
     cats = pre_process.normalise(cats)
