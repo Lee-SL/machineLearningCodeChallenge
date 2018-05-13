@@ -16,7 +16,7 @@ def main():
 To train model for predicting how long cats will live (in years) please enter the file path
 for the cats csv file for example: ./input/cats.csv
     """)
-    cats = import_.import_df()
+    cats = import_.import_df("train")
 
     # PRE-PROCESSING
     pre_process = PreProcess()

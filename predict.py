@@ -1,41 +1,64 @@
-# import_ all methods here
-from importClass.Import import Import
+from import_.Import import Import
+from classifier.Classifier import Classifier
 from export.Export import Export
-from preprocessing.ppCalcs import *
-from preprocessing.PreProcess import *
+from preprocessing.PreProcess import PreProcess
 
 
-def Main():
-    # initialise comments
-    comment = ""
-    # import_
-    importOb = Import()
+def main():
+
+    date_column = "date of last vet visit"
+    target = "age at death"
+    export_file_dir = "./output/"
+    export_model_dir = "./model/xgb_model.dat"
+
+    # IMPORT
+    import_ = Import()
     print("""
-To summarise survey results please enter the file path for both the survey and the survey responses
-Please enter the survey file path for example: ./example-data/survey-1.csv 
+To predict how long cats will live (in years) please enter the file path
+for the cats csv file for example: ./input/cats_pred.csv
     """)
-    survey = importOb.importSurveys(input())
+    cats = import_.import_df("predict")
+    cats_copy = cats.copy()
 
+    # PRE-PROCESSING
+    pre_process = PreProcess()
+    print("Pre-processing Imported Data..")
+
+    # process date to keep year only
+    print("Processing date column to keep year only")
+    pre_process.strip_year(cats, date_column)
+
+    # Storing numerical columns in the background
+    pre_process.get_numerical_cols(cats)
+
+    # Convert all columns to float data type
+    print("Convert all columns to float data type")
+    pre_process.convert_to_float(cats)
+
+    # Replace NaN values with Median
+    print("Replacing all NaN values with median")
+    cats = pre_process.replace_nan(cats)
+
+    # Replace Outliers
+    print("Replacing outliers")
+    pre_process.replace_outliers(cats)
+
+    # Normalise dataset
+    print("Normalising dataset")
+    cats = pre_process.normalise(cats)
     print("""
-Please enter the survey response file path for example: ./example-data/survey-1-responses.csv
-    """)
-    survey_res = importOb.importSurveys(input())
-    importOb.checkSurveys(survey, survey_res)
+    Cats dataset 
+    {0}        
+    """.format(cats.head()))
 
-    # Calculations
-    # participation preprocessing
-    # initialise object
-    ppCalc = PPCalcs(survey_res, comment)
-    ppCount, ppPercent = ppCalc.ppCalc()
+    # PREDICTION
+    print("Prediction Starting")
+    cats_pred = Classifier.predict(export_model_dir, cats)
 
-    # average rating preprocessing
-    # initialise object
-    avgRQ = AverageRating(survey, survey_res, comment)
-    avgs, comment = avgRQ.avgRating()
+    # EXPORTING
+    print("Prediction Finished")
+    Export.export_pred_file(cats_copy, cats_pred, target, export_file_dir)
 
-    # export class
-    export = Export(ppCount, ppPercent, avgs, comment)
-    export.displayRes()
 
 if __name__ == "__main__":
-    Main()
+    main()
